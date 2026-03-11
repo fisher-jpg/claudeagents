@@ -1,0 +1,41 @@
+name: Sync Claude Assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      sync_message:
+        description: 'Description of what changed'
+        required: false
+        default: 'Manual sync of Claude assets'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate structure
+        run: |
+          echo "Checking repo structure..."
+          for dir in agents skills workflows context memory prompts; do
+            if [ ! -d "$dir" ]; then
+              echo "WARNING: Missing directory: $dir"
+            else
+              echo "OK: $dir/"
+            fi
+          done
+          echo ""
+          echo "Current skills:"
+          ls -la skills/*/SKILL.md 2>/dev/null || echo "  (none)"
+          echo ""
+          echo "Memory edits:"
+          cat memory/memory-edits.md 2>/dev/null || echo "  (none)"
+
+      - name: Report
+        run: |
+          echo "Sync complete: ${{ github.event.inputs.sync_message }}"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Timestamp: $(date -u)"
