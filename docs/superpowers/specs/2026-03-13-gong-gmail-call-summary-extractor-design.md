@@ -60,7 +60,7 @@ No additional tools or API access required for Phase 1.
 
 - **From:** `do-not-reply@gong.io`
 - **Subject contains:** `Call recording and analysis is ready`
-- **Time window:** Last 24 hours (default), configurable
+- **Time window:** Last 7 days (default), configurable
 
 ### Filtering
 
@@ -147,6 +147,7 @@ The skill produces a structured Markdown artifact:
 - **Company:** [Company Name]
 - **Date:** [Date]
 - **Duration:** [Duration]
+- **Gong Call ID:** [extracted from URL]
 - **Gong Link:** [Go to call](URL)
 
 ## Participants
@@ -188,7 +189,7 @@ The skill accepts optional parameters:
 | Parameter | Description | Default |
 |---|---|---|
 | Company name | Filter results to a specific company | None (return all) |
-| Time window | How far back to search | Last 24 hours |
+| Time window | How far back to search | Last 7 days |
 
 **Example invocations:**
 - "Pull my latest Gong call summary"
@@ -209,17 +210,31 @@ This agent is not in scope for this spec but follows the same pattern as `prep-b
 
 ## Handoff to Post-Call Follow-Up Workflow
 
-The structured Markdown output becomes the input for the `post-call-follow-up-generation` workflow (spec: `outputs/post-call-follow-up-generation-building-block-spec.md`).
+The structured Markdown output becomes the input for the `post-call-follow-up-generation` workflow (spec at repo root: `outputs/post-call-follow-up-generation-building-block-spec.md`).
 
-Specifically, the output maps to the existing workflow's steps:
+### Phase 1 Workflow Simplification
+
+The existing post-call follow-up workflow was designed for full transcript access. In Phase 1 (email-only), **Steps 2 and 3 are bypassed**:
+
+- **Step 2 (Transcript Analyzer):** Requires the raw transcript for independent analysis. In Phase 1, no transcript is available — this step is skipped. The Gong summary from the email serves as the sole source of call content.
+- **Step 3 (Summary Comparator):** Compares Claude's analysis to Gong's summary to catch discrepancies. With no independent analysis (Step 2 skipped), there is nothing to compare — this step is skipped.
+
+**Phase 1 effective flow:**
+```
+This Skill (extract from Gmail) → Step 4 (Human Review) → Step 5 (Product Knowledge) → Step 6 (Draft) → Step 7 (Deliver)
+```
+
+**Phase 2 restores the full flow** by adding transcript access, enabling Steps 2 and 3.
+
+### Output Mapping
 
 | This Skill's Output | Feeds Into |
 |---|---|
-| Key Points | Step 2 (Transcript Analyzer) — used as the "summary" input in Phase 1 |
-| Next Steps | Step 3 (Summary Comparator) — used as the Gong summary input |
+| Key Points + Next Steps | Step 4 (Human Review) — user reviews Gong's summary as the single source |
 | Participants | Step 6 (Follow-Up Drafter) — recipient and attendee context |
 | Deal info | Step 6 (Follow-Up Drafter) — deal context for the follow-up |
 | Gong Link | Preserved as reference in the follow-up |
+| Gong Call ID | Extracted from Gong link URL — used for Phase 2 API calls |
 
 ---
 
@@ -235,6 +250,35 @@ When the Gong MCP (currently being developed by the admin team) becomes availabl
 
 ---
 
+## Email Body Parsing Approach
+
+The Gmail MCP `gmail_read_message` tool returns email content which may be HTML (Gong uses a styled email template). The parsing approach:
+
+1. **Prefer plain text:** If the Gmail MCP returns a plain-text version (multipart alternative), use it — the structure is simpler to parse
+2. **HTML fallback:** If only HTML is available, extract text content by identifying Gong's structural elements (headings like "Key points", "Next steps", "Associated deals", "Participants" and their associated content blocks)
+3. **Section-based extraction:** Parse by looking for known section headers rather than relying on specific HTML classes or CSS (which Gong may change). The section headers ("Key points", "Next steps", etc.) are stable content strings.
+4. **Numbered list preservation:** Extract numbered items maintaining their original order and full text
+
+### Gong Call ID Extraction
+
+The "Go to call" link URL contains a Gong call identifier. Extract and include this in the output as a stable ID for Phase 2 API correlation.
+
+---
+
+## Error Handling
+
+| Scenario | Behavior |
+|---|---|
+| No matching emails found | Report "No Gong call emails found in the last [time window]" and suggest widening the search |
+| Email found but a required field cannot be parsed | Extract what is available, flag missing fields with `[Not found in email]`, and warn the user |
+| Email body format differs from expected structure | Return the raw email content to the user with a note that parsing failed — do not guess |
+| Gmail MCP returns truncated content | Warn the user and attempt extraction from what is available |
+| Multiple emails match and no company filter provided | Present a numbered list of matches (title, company, date) for the user to select |
+
+**Idempotency:** Re-extracting the same email is safe and expected. The skill does not track previously processed emails — that is the responsibility of the future autonomous agent wrapper (Phase 1+).
+
+---
+
 ## Constraints & Assumptions
 
 - Gong email format is consistent (confirmed by user)
@@ -242,8 +286,9 @@ When the Gong MCP (currently being developed by the admin team) becomes availabl
 - Subject line always ends with `: Call recording and analysis is ready`
 - The email body contains the full Gong summary (confirmed — same content as in the Gong UI)
 - Gmail MCP is already configured and working
+- Gmail MCP `gmail_search_messages` supports Gmail query syntax (e.g., `from:do-not-reply@gong.io subject:"Call recording and analysis is ready" newer_than:7d`)
 - Not all calls will have associated deal data
-- Email HTML parsing may require handling of Gong's email template structure
+- The call card in the email shows a condensed participant summary (e.g., "+ 1 more"); full participant details with names and titles are in the dedicated Participants section at the bottom of the email
 
 ---
 
@@ -254,6 +299,14 @@ When the Gong MCP (currently being developed by the admin team) becomes availabl
 | `post-call-follow-up-generation-building-block-spec.md` | This skill replaces Step 1 (Retrieve Gong Artifacts) for Phase 1 |
 | `post-call-follow-up-generation-definition.md` | This skill's output feeds the workflow defined here |
 | `prep-block-on-booking` agent | Pattern reference for the future autonomous Gmail-monitoring agent |
+
+---
+
+## Implementation Location
+
+- **Skill file:** `skills/gong-call-summary-extractor/SKILL.md`
+- **Follows existing pattern:** Same YAML frontmatter format as `skills/prep-note-summary/SKILL.md`
+- **Output behavior:** Return the structured Markdown artifact as the response (do not auto-save to a file)
 
 ---
 
