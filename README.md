@@ -36,8 +36,7 @@ claudeagents/
 
 ## Current Skills
 
-- **`demo-plan`** — Converts free-form sales prep notes into a structured one-pager demo plan
-- **`demo-prep-summary`** — Enhanced demo plan with risk flags, question rationales, stakeholder-aware demo flow, and info gap checklists
+- **`prep-note-summary`** — Converts free-form sales rep prep notes into a structured one-pager demo plan with risk flags, discovery questions, stakeholder-aware demo flow, and info gap checklists
 
 ## About
 

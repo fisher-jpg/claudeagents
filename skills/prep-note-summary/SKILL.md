@@ -1,5 +1,5 @@
 ---
-name: demo-prep-summary
+name: prep-note-summary
 description: "Converts a sales rep's free-form prep notes into a structured one-pager pre-call demo plan as a formatted Markdown file. Use this skill whenever the user mentions demo prep, demo plan, demo prep summary, pre-call planning, call prep notes, or wants to turn raw prospect notes into a structured document for an upcoming sales demo or discovery call. Also trigger when the user pastes unstructured notes about a prospect and asks for them to be organized, formatted, or turned into a plan. Even if they don't say 'demo plan' explicitly — if they're prepping for a sales call and want structure, use this skill."
 ---
 
@@ -76,6 +76,29 @@ Example format:
 1. **Unified engagement platform** — A single tool that combines sourcing, outreach, and candidate tracking
 2. **Automated reporting** — Dashboards that can be shared with hiring managers without manual work
 
+## Recommended Demo Flow / Products to Cover
+Organized by Gem product line. Only include product lines that are relevant based on the prospect's challenges and goals — omit any product line with no clear connection to the notes. Within each product line, list the specific things to cover or demonstrate, connecting each to a challenge or goal from the notes. When the notes make it clear which contact cares most about a given area, call that out (e.g., "land this with Priya" or "addresses Derek's concern about...").
+
+Order product lines by priority — lead with the highest-impact area for this prospect. Keep each product line to 2-4 bullets. The demo should tell a story that maps to the prospect's priorities, not walk through every product.
+
+Gem product lines (use only those that apply):
+- **AI Sourcing** — AI-powered candidate sourcing, JD parsing, scoring criteria, candidate ranking, bulk prospecting, outreach sequences, personalization, engagement tracking (opens, replies), duplicate detection, CRM activity history
+- **AI App Review** — AI-powered inbound application ranking, automated resume screening, qualification filtering
+- **Gem ATS** — Applicant tracking, pipeline management, hiring workflows, scorecards, offers
+- **Talent Compass** — Analytics, reporting, dashboards, pipeline insights, DEI insights, forecasting
+- **Talent Marketing** — Large-volume branded email campaigns (typically no-reply), landing pages (Gem Pages), forms (Gem Forms), events module, talent communities, career sites. Not for standard sourcing outreach — that belongs under AI Sourcing.
+- **Gem Scheduling** — Interview scheduling, coordination, calendar management
+- **Prospect Search** — Search existing Gem prospect and ATS candidate database for rediscovery and nurture, AI Rediscovery, saved search automations, talent pool creation
+- **Talent Pipeline** — Visualize current ATS candidate pipeline in Gem, advance or reject candidates, SLA tracking, active vs. consolidated views
+
+Example format:
+### AI Sourcing
+- Demo JD parsing and AI scoring to surface qualified candidates — directly addresses their lack of outbound pipeline
+- Show bulk prospecting with credential-based filtering — land this with Kalen to prove volume exceeds what Hirefly delivered
+
+### Prospect Search
+- Walk through AI Rediscovery to surface past candidates for new roles — connects to their interest in building a long-term pipeline
+
 ## Competitive Landscape
 Any competing tools the prospect is currently using or evaluating. Include context if provided (e.g., "Currently on Lever, contract up in Q3" or "Also evaluating Ashby"). If the notes give any indication of which competitor the prospect is most interested in or leaning toward, call that out explicitly — this helps the SC know where to focus competitive positioning during the demo.
 
@@ -93,14 +116,6 @@ Example format:
 - What types of fintech roles are hardest to fill — engineering, compliance, quant? *(Helps tailor the sourcing portion of the demo to their actual pain)*
 - How are hiring managers consuming pipeline updates today? *(Tests whether reporting pain extends beyond the TA team — could expand the buying committee)*
 
-## Recommended Demo Flow
-A numbered sequence of demo segments tailored to the prospect's challenges and goals. Each step should:
-- Name the feature area or workflow to show
-- Connect it to a specific challenge or goal from the notes
-- When the notes make it clear which contact cares most about a given area, call that out (e.g., "land this with Priya" or "addresses Derek's concern about..."). This helps the SC direct the conversation and make eye contact with the right person at the right moment.
-- Be brief — one to two lines per step is ideal
-
-Keep this to 4-6 steps. The demo should tell a story that maps to the prospect's priorities, not just walk through a feature list.
 ```
 
 ## Section-specific guidance
@@ -112,14 +127,15 @@ These are the one section where you do light creative work — the rep didn't ex
 - Avoid generic questions like "What does success look like?" — make them specific to what the rep shared
 - Always include a short italicized rationale in parentheses after each question explaining what the rep is trying to learn. This helps the rep decide in real time which questions to prioritize based on how the conversation is going.
 
-### Recommended Demo Flow
-Build the flow around the prospect's priorities, not a default product walkthrough. The order should reflect what matters most to this prospect based on their challenges and goals. Lead with the highest-impact area.
+### Recommended Demo Flow / Products to Cover
+Build the flow around the prospect's priorities, not a default product walkthrough. Only include Gem product lines that directly connect to the prospect's challenges and goals — a 3-product plan that's tightly mapped beats a 6-product plan that feels generic. Order product lines by impact: lead with whatever addresses the prospect's biggest pain point. Keep each product line's bullets tight (2-4 max).
 
 ## Formatting rules
 
 - Use `#` for the document title, `##` for section headers
 - Use `**bold**` for names, key terms, and emphasis
-- Use `-` for unordered lists, `1.` for numbered lists (Challenges, Desired Solutions, and Recommended Demo Flow)
+- Use `-` for unordered lists, `1.` for numbered lists (Challenges, Desired Solutions)
+- Use `###` for product line sub-headers within the Recommended Demo Flow / Products to Cover section
 - Use `---` as a divider after the header metadata
 - No emojis, no decorative formatting
 - Keep the entire document tight enough to print on a single page if needed
@@ -144,4 +160,4 @@ Only include this section when the notes have real gaps that would affect demo p
 
 ## Output
 
-Save the Markdown file to the outputs directory and present it to the user.
+Return the structured Markdown demo plan as your response. Do not save it to a file — the caller decides where the output goes (e.g., saving to a file, writing to Notion, or displaying directly).
