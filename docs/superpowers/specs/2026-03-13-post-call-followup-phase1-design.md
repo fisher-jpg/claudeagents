@@ -48,11 +48,29 @@ In a future phase, an orchestrator agent can chain these automatically.
 
 ---
 
+## Input Contract
+
+This skill consumes the structured Markdown output from the `gong-call-summary-extractor` skill. The expected sections and how each step uses them:
+
+| Gong Extractor Section | Used By | Purpose |
+|---|---|---|
+| `## Key Points` (numbered list) | Step A | Scan for product questions |
+| `## Next Steps` (numbered list) | Step A | Scan for product questions |
+| `## Call Details` (Company, Date, Duration) | Step D | Call date for external message greeting |
+| `## Participants` (Gem + Customer groups) | Step E | Recipient identification |
+| `## Associated Deal` (optional) | Not used | Available for future extensions |
+
+The call title is extracted from the `# Call Summary: [Title]` heading.
+
+**Note on participants:** The Gong extractor output includes participant names and titles but NOT email addresses. For external delivery, the skill will always need to ask the user for the customer's email address. For internal Slack delivery, the skill will attempt to match Gem participant names to Slack users but may need to ask.
+
+---
+
 ## Step-by-Step Design
 
 ### Step A: Product Question Classification
 
-**Input:** The structured call summary output from `gong-call-summary-extractor` (key points + next steps sections).
+**Input:** The `## Key Points` and `## Next Steps` sections from the Gong extractor output.
 
 **Classification logic:**
 
@@ -116,9 +134,13 @@ For each confirmed question, search the Gem external help center.
 
 **Research process per question:**
 
-1. Search help.gem.com for the question topic
-2. Read the most relevant article(s)
-3. Extract the answer and the article URL
+1. Construct a search query from the question's key terms (e.g., "Rippling integration" from "Does Gem support two-way integration with Rippling?")
+2. Fetch `https://help.gem.com/hc/en-us/search?utf8=%E2%9C%93&query=[search terms]` via WebFetch to find relevant articles
+3. Read the top 1-2 most relevant article pages to extract the answer
+4. If the first search yields no relevant results, rephrase the query with alternative terms and retry once (e.g., try "Rippling sync" instead of "Rippling integration")
+5. Extract the answer text and the article URL
+
+Research questions sequentially (one at a time) to avoid overwhelming the help center with concurrent requests.
 
 **Research output per question:**
 
@@ -201,7 +223,7 @@ Product Q&A from [Call Title]:
 **Internal (Slack):**
 - Use `slack_send_message` to send a DM
 - Recipient: the AE or sales rep from the call (identified from participants; otherwise ask the user)
-- Sent directly (not a draft)
+- Sent directly (not a draft) — this is intentional: internal messages are lower-stakes (going to a colleague, not a customer), and the user already reviewed and confirmed the question list at the human gate. If a draft workflow is preferred in the future, this can be changed to `slack_send_message_draft`.
 
 **After delivery, present unresolved questions (if any):**
 
@@ -222,7 +244,7 @@ The skill extracts recipient information from the call summary's Participants se
 **External delivery:**
 - Look for the customer participant(s) — the Participants section groups them under the customer company heading with names and titles
 - If multiple customer participants, ask the user which one to address
-- If no email address is available from the call summary, ask the user to provide it
+- The Gong extractor output does not include email addresses — the skill will always ask the user to provide the customer's email
 
 **Internal delivery:**
 - Look for the Gem AE or sales rep from the Participants section (non-SC roles)
