@@ -43,6 +43,7 @@ In a future phase, an orchestrator agent can chain these automatically.
 | Tool | Purpose | Status |
 |---|---|---|
 | WebFetch | Search Gem external help center (help.gem.com) | Configured |
+| Google Calendar MCP (`gcal_list_events`) | Look up calendar invite to find attendee email addresses | Configured |
 | Gmail MCP (`gmail_create_draft`) | Create external follow-up email draft | Configured |
 | Slack MCP (`slack_send_message`) | Send internal follow-up to AE/rep | Configured |
 
@@ -62,7 +63,7 @@ This skill consumes the structured Markdown output from the `gong-call-summary-e
 
 The call title is extracted from the `# Call Summary: [Title]` heading.
 
-**Note on participants:** The Gong extractor output includes participant names and titles but NOT email addresses. For external delivery, the skill will always need to ask the user for the customer's email address. For internal Slack delivery, the skill will attempt to match Gem participant names to Slack users but may need to ask.
+**Note on participants:** The Gong extractor output includes participant names and titles but NOT email addresses. Email addresses can be found on the original calendar invite for the call (via Google Calendar MCP). For internal Slack delivery, the skill will attempt to match Gem participant names to Slack users but may need to ask.
 
 ---
 
@@ -242,9 +243,9 @@ These questions couldn't be answered from the help center — handle separately:
 The skill extracts recipient information from the call summary's Participants section:
 
 **External delivery:**
-- Look for the customer participant(s) — the Participants section groups them under the customer company heading with names and titles
-- If multiple customer participants, ask the user which one to address
-- The Gong extractor output does not include email addresses — the skill will always ask the user to provide the customer's email
+- **Default: include all customer participants.** Unless the call summary indicates the follow-up should go to specific people only, all customer participants from the Participants section should be recipients.
+- **If the call explicitly states a narrower audience** (e.g., "send the follow-up just to Ryan"), include only those named individuals. Others may be CC'd at the user's discretion.
+- **Email address lookup:** The Gong extractor output includes names but not email addresses. To find emails, search for the original calendar invite via Google Calendar MCP (match by call title and date from `## Call Details`). Extract attendee email addresses from the invite. If the calendar invite can't be found, ask the user to provide email addresses.
 
 **Internal delivery:**
 - Look for the Gem AE or sales rep from the Participants section (non-SC roles)
@@ -260,7 +261,8 @@ The skill extracts recipient information from the call summary's Participants se
 | No product questions found in the call summary | Report "No product questions identified in this call summary." Offer to let the user add questions manually. |
 | WebFetch to help.gem.com fails | Warn the user. Mark all questions as unresolved. Still offer to draft a message with placeholder text. |
 | All questions are unresolved | Report that no answers were found. List all questions for manual follow-up. Do not draft a message. |
-| Customer email not in call summary | Ask the user to provide the recipient's email address |
+| Calendar invite not found for email lookup | Ask the user to provide recipient email addresses |
+| Calendar invite found but missing some attendee emails | Use what's available, ask the user for the rest |
 | Slack recipient can't be identified | Ask the user to provide the recipient's Slack handle or name |
 | Gmail draft creation fails | Output the formatted message as text for manual copy-paste |
 | Slack message send fails | Output the formatted message as text for manual copy-paste |
