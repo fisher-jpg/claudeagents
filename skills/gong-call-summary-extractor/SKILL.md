@@ -80,8 +80,8 @@ The Gong notification email has a consistent structure. Extract these fields:
 - **Company name** — listed on the second line of the call card
 - **Call date** — date shown in the call card
 - **Duration** — shown in the call card (e.g., "50 minutes")
-- **Gong call link** — the URL behind the "Go to call" button
-- **Gong call ID** — extract from the Gong call link URL
+- ~~**Gong call link**~~ — not available in plain text email (Phase 2)
+- ~~**Gong call ID**~~ — not available in plain text email (Phase 2)
 
 **From the body sections:**
 - **Key points** — numbered list under the "Key points" heading. Preserve all items exactly as written.
@@ -114,8 +114,10 @@ If the email structure is completely unrecognizable:
 - Note: "Could not parse this Gong email. The format may have changed. Here is the raw content."
 - Do not attempt to guess or fabricate data.
 
-Required fields: call title, company name, call date, duration, Gong call link, key points, next steps, participants
-Optional fields: deal name, deal amount, deal stage, deal close date, Gong call ID
+Required fields: call title, company name, call date, duration, key points, next steps, participants
+Optional fields: deal name, deal amount, deal stage, deal close date, Gong call link, Gong call ID
+
+**Note on Gong link:** The Gmail MCP returns plain text, so hyperlink URLs from the "Go to call" button are not available. Omit the Gong Call ID and Gong Link fields from the output. These will be added in Phase 2 when the Gong MCP provides direct API access.
 
 If the email content appears truncated (cuts off mid-section), warn the user and extract what is available from the complete sections.
 
@@ -130,8 +132,6 @@ Return a structured Markdown artifact in this exact format:
 - **Company:** [Company Name]
 - **Date:** [Date]
 - **Duration:** [Duration]
-- **Gong Call ID:** [extracted from URL]
-- **Gong Link:** [Go to call](URL)
 
 ## Participants
 ### Gem
