@@ -68,6 +68,8 @@ The overall flow follows a mostly fixed sequence (retrieve → analyze → compa
 | 6 | Draft Follow-Up Message | Guided | Skill + Context | None | **Yes** | No |
 | 7 | Deliver to Gmail or Slack | Deterministic | Agent + MCP | Gmail MCP, Slack MCP | No | No |
 
+> **Phase 1 implementation:** Step 1 is handled by the `gong-call-summary-extractor` skill, which extracts call summaries from Gong notification emails via Gmail MCP (no Gong API required). In Phase 1, Steps 2 and 3 are bypassed — the Gong email summary serves as the sole data source, and the workflow proceeds directly to Step 4 (Human Review). See design spec: `docs/superpowers/specs/2026-03-13-gong-gmail-call-summary-extractor-design.md`.
+
 ---
 
 ## Skill Candidates
