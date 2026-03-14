@@ -72,6 +72,8 @@ call but hasn't extracted the summary yet, tell them to run the
 
 ### Step A — Classify product questions
 
+First, verify the input has at least one of `## Key Points` or `## Next Steps`. If both sections are missing, warn the user and ask them to provide the call summary or re-run the `gong-call-summary-extractor`. Do not proceed without at least one of these sections.
+
 Read the `## Key Points` and `## Next Steps` sections from the call summary.
 
 **Identify product questions.** A product question is any item where:
@@ -226,7 +228,9 @@ Internal format rules:
 1. **Find recipient email addresses.** The Gong extractor output has participant names but not email addresses. To find emails:
    - Search for the original calendar invite using `gcal_list_events`. Match by call title and date from the `## Call Details` section.
    - Extract attendee email addresses from the calendar invite.
-   - Default: include **all customer participants** as recipients unless the user specified otherwise at the human gate.
+   - Default: include **all customer participants** as recipients.
+   - If the call summary indicates follow-up should go to specific people only (e.g., "send the follow-up just to Ryan"), include only those named individuals. Others may be CC'd at the user's discretion.
+   - The user may also narrow or adjust recipients at the human gate.
    - If the calendar invite can't be found, ask the user to provide email addresses.
    - If the calendar invite is found but missing some attendee emails, use what's available and ask the user for the rest.
 
@@ -279,7 +283,7 @@ Delivered to [Gmail draft / Slack DM to [Name]]. All questions answered.
 | Scenario | What to do |
 |---|---|
 | No product questions found in call summary | Report "No product questions identified." Offer to let the user add questions manually. |
-| WebFetch to help.gem.com fails | Warn the user. Mark all questions as unresolved. Offer to draft a message with placeholder text. |
+| WebFetch to help.gem.com fails | Warn the user. Mark all questions as unresolved. Offer to draft a message with placeholder text: "[Answer pending — the help center was unavailable. I'll follow up on this separately.]" |
 | All questions are unresolved | Report that no answers were found. List all questions for manual follow-up. Do not draft a message. |
 | Calendar invite not found for email lookup | Ask the user to provide recipient email addresses. |
 | Calendar invite found but missing some attendee emails | Use what's available, ask for the rest. |
