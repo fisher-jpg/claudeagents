@@ -124,3 +124,46 @@ Wait for the user's response. The user may:
 - Specify internal or external delivery
 
 After this gate, you have: a confirmed question list + delivery target (internal or external).
+
+### Step C — Research answers from the Gem help center
+
+For each confirmed question, search the Gem external help center.
+
+**Source:** help.gem.com only. Do NOT search the internal Notion help center, GitHub, or any other source. All answers must be safe to include in customer-facing messages.
+
+**Research process for each question:**
+
+1. Extract 2-4 key terms from the question (e.g., "Rippling integration" from "Does Gem support two-way integration with Rippling?")
+2. Fetch the search results page:
+   ```
+   https://help.gem.com/hc/en-us/search?utf8=%E2%9C%93&query=[key terms]
+   ```
+   Use `WebFetch` to retrieve this page.
+3. From the search results, identify the top 1-2 most relevant article links.
+4. Fetch each relevant article page with `WebFetch` and extract the answer.
+5. If the first search yields no relevant results, rephrase the query with alternative terms and retry once (e.g., try "Rippling sync" instead of "Rippling integration").
+
+**Research questions sequentially** — one at a time, not in parallel.
+
+**Track results for each question:**
+
+```
+Question: [the question]
+Answer: [extracted answer text, concise but complete]
+Source: [full URL of the help center article]
+Status: Resolved
+```
+
+or, if no answer was found after the retry:
+
+```
+Question: [the question]
+Answer: [none found]
+Source: [none]
+Status: Unresolved
+```
+
+**Important:**
+- Only include information that is explicitly stated in the help center article. Do not infer, extrapolate, or combine information from multiple articles to construct an answer.
+- Keep answers concise — 2-4 sentences that directly address the question.
+- Preserve the source URL for each answer (used in the external message format).
