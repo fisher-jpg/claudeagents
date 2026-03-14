@@ -167,3 +167,100 @@ Status: Unresolved
 - Only include information that is explicitly stated in the help center article. Do not infer, extrapolate, or combine information from multiple articles to construct an answer.
 - Keep answers concise — 2-4 sentences that directly address the question.
 - Preserve the source URL for each answer (used in the external message format).
+
+### Step D — Draft the follow-up message
+
+Based on the delivery target chosen at the human gate, draft the message using the appropriate format. Only include resolved questions — unresolved questions are handled separately after delivery.
+
+**If all questions are unresolved:** Do not draft a message. Report that no answers were found and list all questions for manual follow-up. Stop here.
+
+**External format (Gmail draft to customer):**
+
+```
+Hi [Customer First Name(s)],
+
+Thanks for taking the time to connect on [call date from ## Call Details]. Following up on a few questions that came up during our conversation:
+
+**[Question 1]**
+[Answer text — 2-4 sentences]
+Learn more: [help center article URL]
+
+**[Question 2]**
+[Answer text — 2-4 sentences]
+Learn more: [help center article URL]
+
+Let me know if any other questions come up.
+
+Best,
+John
+```
+
+External format rules:
+- Address the customer by first name. If multiple customer participants, use all first names (e.g., "Hi Ryan and Sarah,").
+- "Learn more" links point to the help.gem.com article where the answer was found.
+- Tone: professional, concise, helpful. Not overly formal.
+- Only include resolved questions. Do not mention unresolved questions in the message.
+
+**Internal format (Slack message to AE/rep):**
+
+```
+Product Q&A from [Call Title]:
+
+**[Question 1]**
+[Answer text]
+
+**[Question 2]**
+[Answer text]
+```
+
+Internal format rules:
+- No greeting, no sign-off — just the Q&A pairs.
+- No "Learn more" links — source links are omitted from internal messages.
+- Tone: direct, concise.
+- Only include resolved questions.
+
+### Step E — Deliver the message
+
+**External delivery (Gmail draft):**
+
+1. **Find recipient email addresses.** The Gong extractor output has participant names but not email addresses. To find emails:
+   - Search for the original calendar invite using `gcal_list_events`. Match by call title and date from the `## Call Details` section.
+   - Extract attendee email addresses from the calendar invite.
+   - Default: include **all customer participants** as recipients unless the user specified otherwise at the human gate.
+   - If the calendar invite can't be found, ask the user to provide email addresses.
+   - If the calendar invite is found but missing some attendee emails, use what's available and ask the user for the rest.
+
+2. **Create the Gmail draft** using `gmail_create_draft`:
+   - **To:** customer email address(es)
+   - **Subject:** `Following up — [Call Title]`
+   - **Body:** the external format message from Step D
+
+   The draft is NOT sent automatically. The user reviews and sends manually.
+
+3. If `gmail_create_draft` fails, output the formatted message as text so the user can copy-paste it manually.
+
+**Internal delivery (Slack message):**
+
+1. **Identify the recipient.** Look for the Gem AE or sales rep in the Participants section (non-SC roles). If multiple Gem participants, ask which one to send to. If the Slack handle can't be determined from the name, ask the user.
+
+2. **Send the Slack message** using `slack_send_message` as a DM to the identified recipient.
+
+   This is sent directly, not as a draft. Internal messages are lower-stakes (going to a colleague) and the user already reviewed the question list at the human gate.
+
+3. If `slack_send_message` fails, output the formatted message as text so the user can copy-paste it manually.
+
+**After delivery, report unresolved questions (if any):**
+
+```
+Delivered to [Gmail draft / Slack DM to [Name]].
+
+These questions couldn't be answered from the help center — you'll need to handle these separately:
+1. [Unresolved question 1]
+2. [Unresolved question 2]
+```
+
+If all questions were resolved, just confirm delivery:
+
+```
+Delivered to [Gmail draft / Slack DM to [Name]]. All questions answered.
+```
