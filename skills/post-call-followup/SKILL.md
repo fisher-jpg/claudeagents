@@ -264,3 +264,50 @@ If all questions were resolved, just confirm delivery:
 ```
 Delivered to [Gmail draft / Slack DM to [Name]]. All questions answered.
 ```
+
+## Guidelines
+
+- **Only use help.gem.com for product answers.** Do NOT search the internal Notion help center, GitHub, or any other source. All answers must be safe for customer-facing messages.
+- **Never fabricate answers.** Every answer must come directly from a help center article. If you can't find it, mark the question as unresolved.
+- **Preserve the user's control.** The human gate exists so the user can shape the output. Don't skip it, rush through it, or proceed without explicit confirmation.
+- **Keep answers concise.** 2-4 sentences per answer. The customer wants a quick, useful response — not a knowledge base dump.
+- **Don't include unresolved questions in the message.** They go in the post-delivery report, not the follow-up message itself.
+- **This skill only handles product questions.** Action items, scheduling follow-ups, and other call outcomes are out of scope for Phase 1.
+
+## Error handling
+
+| Scenario | What to do |
+|---|---|
+| No product questions found in call summary | Report "No product questions identified." Offer to let the user add questions manually. |
+| WebFetch to help.gem.com fails | Warn the user. Mark all questions as unresolved. Offer to draft a message with placeholder text. |
+| All questions are unresolved | Report that no answers were found. List all questions for manual follow-up. Do not draft a message. |
+| Calendar invite not found for email lookup | Ask the user to provide recipient email addresses. |
+| Calendar invite found but missing some attendee emails | Use what's available, ask for the rest. |
+| Slack recipient can't be identified | Ask the user for the recipient's Slack handle or name. |
+| Gmail draft creation fails | Output the formatted message as text for manual copy-paste. |
+| Slack message send fails | Output the formatted message as text for manual copy-paste. |
+| Call summary input is missing expected sections | Warn the user which sections are missing. Proceed with what's available if Key Points or Next Steps exist. If both are missing, ask the user to provide the call summary. |
+
+## Phase 1 scope
+
+This skill implements a simplified version of the full post-call follow-up workflow:
+
+| Full Workflow Step | Phase 1 Status |
+|---|---|
+| Step 1: Retrieve Gong Artifacts | Handled by `gong-call-summary-extractor` (separate skill) |
+| Step 2: Independent Transcript Analysis | Skipped — no raw transcript in Phase 1 |
+| Step 3: Compare to Gong Summary | Skipped — no independent analysis to compare |
+| Step 4: Human Review Checkpoint | Implemented as Step B |
+| Step 5: Product Knowledge Check | Implemented as Step C (external help center only) |
+| Step 6: Draft Follow-Up Message | Implemented as Step D |
+| Step 7: Deliver to Gmail or Slack | Implemented as Step E |
+
+## What this skill does NOT do (Phase 1)
+
+- Analyze raw call transcripts (Phase 2 — requires Gong MCP)
+- Compare Claude's analysis to Gong's summary (Phase 2)
+- Track or include action items in the follow-up (future extension)
+- Search the Gem internal help center (removed — too risky for customer messages)
+- Search GitHub repositories for product answers (future extension)
+- Handle unresolved questions automatically (future workflow)
+- Chain with the Gong extractor automatically (future agent orchestration)
